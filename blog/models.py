@@ -1,6 +1,15 @@
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.db.models import Count
+
+
+class TagQuerySet(models.QuerySet):
+
+    def popular(self):
+        tags = Tag.objects.annotate(Count('posts'))
+        popular_tags = tags.order_by('-posts__count')
+        return popular_tags
 
 
 class PostQuerySet(models.QuerySet):
@@ -57,6 +66,8 @@ class Tag(models.Model):
 
     def get_absolute_url(self):
         return reverse('tag_filter', args={'tag_title': self.slug})
+
+    objects = TagQuerySet.as_manager()
 
     class Meta:
         ordering = ['title']
